@@ -18,10 +18,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  useEffect(() => {
-    loadExpenses();
-  }, [currentMonth]);
-
   const loadExpenses = async () => {
     try {
       setLoading(true);
@@ -35,6 +31,11 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadExpenses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMonth]);
 
   const handleAddExpense = async (
     category: ExpenseCategory,

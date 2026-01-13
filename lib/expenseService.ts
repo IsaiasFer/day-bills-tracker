@@ -39,7 +39,7 @@ export const expenseService = {
     updates: Partial<Omit<Expense, 'id' | 'createdAt'>>
   ): Promise<void> {
     const docRef = doc(db, EXPENSES_COLLECTION, id);
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...updates,
       updatedAt: Timestamp.fromDate(new Date()),
     };
