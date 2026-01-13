@@ -103,6 +103,7 @@ export default function Home() {
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
                 onMonthChange={handleMonthChange}
+                currentMonth={currentMonth}
               />
 
               <div className="bg-white rounded-lg shadow-lg p-6">

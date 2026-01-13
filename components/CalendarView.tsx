@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Expense } from '@/types/expense';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -23,6 +23,7 @@ interface CalendarViewProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
   onMonthChange: (date: Date) => void;
+  currentMonth: Date;
 }
 
 export function CalendarView({
@@ -30,8 +31,13 @@ export function CalendarView({
   selectedDate,
   onDateSelect,
   onMonthChange,
+  currentMonth: propCurrentMonth,
 }: CalendarViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(selectedDate);
+  const [currentMonth, setCurrentMonth] = useState(propCurrentMonth);
+
+  useEffect(() => {
+    setCurrentMonth(propCurrentMonth);
+  }, [propCurrentMonth]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
