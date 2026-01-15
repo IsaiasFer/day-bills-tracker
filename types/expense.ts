@@ -2,6 +2,7 @@ export type ExpenseCategory = 'food' | 'transport' | 'other';
 
 export interface Expense {
   id: string;
+  title?: string;
   date: Date;
   category: ExpenseCategory;
   amount: number;

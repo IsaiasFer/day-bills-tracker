@@ -86,7 +86,7 @@ export function CalendarView({
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold capitalize">
+        <h2 className="text-2xl font-bold capitalize text-gray-800">
           {format(currentMonth, dateFormat, { locale: es })}
         </h2>
         <div className="flex gap-2">

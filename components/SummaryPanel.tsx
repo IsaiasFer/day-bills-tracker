@@ -42,9 +42,9 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="text-blue-500" size={24} />
-        <h3 className="text-xl font-bold">Resumen del Período</h3>
+        <h3 className="text-xl font-bold text-gray-800">Resumen del Período</h3>
       </div>
-      
+
       <div className="mb-4 text-sm text-gray-600">
         {formatDateDisplay(summary.period.start)} - {formatDateDisplay(summary.period.end)}
       </div>
@@ -69,11 +69,11 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
                   <div className={`p-2 rounded-full ${category.bgColor}`}>
                     <Icon className={category.color} size={20} />
                   </div>
-                  <span className="font-medium">{category.label}</span>
+                  <span className="font-medium text-gray-800">{category.label}</span>
                 </div>
-                <span className="text-sm text-gray-500">{percentage}%</span>
+                <span className="text-sm text-gray-600">{percentage}%</span>
               </div>
-              
+
               <div className="mb-2">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -82,7 +82,7 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
                   ></div>
                 </div>
               </div>
-              
+
               <div className="text-lg font-semibold text-gray-800">
                 {formatCurrency(amount)}
               </div>

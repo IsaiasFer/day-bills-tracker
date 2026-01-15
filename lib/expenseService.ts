@@ -20,6 +20,8 @@ export const expenseService = {
     date: Date,
     category: ExpenseCategory,
     amount: number,
+    userId: string,
+    title?: string,
     description?: string
   ): Promise<string> {
     const now = new Date();
@@ -27,6 +29,8 @@ export const expenseService = {
       date: Timestamp.fromDate(date),
       category,
       amount,
+      userId,
+      title: title || '',
       description: description || '',
       createdAt: Timestamp.fromDate(now),
       updatedAt: Timestamp.fromDate(now),
@@ -43,11 +47,11 @@ export const expenseService = {
       ...updates,
       updatedAt: Timestamp.fromDate(new Date()),
     };
-    
+
     if (updates.date) {
       updateData.date = Timestamp.fromDate(updates.date);
     }
-    
+
     await updateDoc(docRef, updateData);
   },
 
@@ -56,9 +60,10 @@ export const expenseService = {
     await deleteDoc(docRef);
   },
 
-  async getExpensesByDateRange(startDate: Date, endDate: Date): Promise<Expense[]> {
+  async getExpensesByDateRange(startDate: Date, endDate: Date, userId: string): Promise<Expense[]> {
     const q = query(
       collection(db, EXPENSES_COLLECTION),
+      where('userId', '==', userId),
       where('date', '>=', Timestamp.fromDate(startDate)),
       where('date', '<=', Timestamp.fromDate(endDate)),
       orderBy('date', 'desc')
@@ -71,6 +76,7 @@ export const expenseService = {
       const data = doc.data();
       expenses.push({
         id: doc.id,
+        title: data.title,
         date: data.date.toDate(),
         category: data.category as ExpenseCategory,
         amount: data.amount,
@@ -83,13 +89,13 @@ export const expenseService = {
     return expenses;
   },
 
-  async getExpensesByDate(date: Date): Promise<Expense[]> {
+  async getExpensesByDate(date: Date, userId: string): Promise<Expense[]> {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    return this.getExpensesByDateRange(startOfDay, endOfDay);
+    return this.getExpensesByDateRange(startOfDay, endOfDay, userId);
   },
 };

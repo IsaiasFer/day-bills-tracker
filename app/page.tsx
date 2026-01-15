@@ -10,20 +10,31 @@ import { ExpenseList } from '@/components/ExpenseList';
 import { SummaryPanel } from '@/components/SummaryPanel';
 import { Plus, Wallet } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const { user, loading: authLoading, logout } = useAuth();
+  const router = useRouter();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
   const loadExpenses = async () => {
+    if (!user) return;
     try {
       setLoading(true);
       const startDate = startOfMonth(currentMonth);
       const endDate = endOfMonth(currentMonth);
-      const data = await expenseService.getExpensesByDateRange(startDate, endDate);
+      const data = await expenseService.getExpensesByDateRange(startDate, endDate, user.uid);
       setExpenses(data);
     } catch (error) {
       console.error('Error loading expenses:', error);
@@ -33,17 +44,21 @@ export default function Home() {
   };
 
   useEffect(() => {
-    loadExpenses();
+    if (user) {
+      loadExpenses();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentMonth]);
+  }, [currentMonth, user]);
 
   const handleAddExpense = async (
     category: ExpenseCategory,
     amount: number,
+    title?: string,
     description?: string
   ) => {
+    if (!user) return;
     try {
-      await expenseService.addExpense(selectedDate, category, amount, description);
+      await expenseService.addExpense(selectedDate, category, amount, user.uid, title, description);
       await loadExpenses();
       setShowExpenseForm(false);
     } catch (error) {
@@ -68,6 +83,22 @@ export default function Home() {
     setCurrentMonth(date);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-xl text-gray-600">Cargando...</div>
+      </div>
+    );
+  }
+
   const dayExpenses = expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
     return (
@@ -84,9 +115,20 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-blue-600 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <Wallet size={32} />
-            <h1 className="text-3xl font-bold">Control de Gastos Diarios</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Wallet size={32} />
+              <h1 className="text-3xl font-bold">Control de Gastos Diarios</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm opacity-90">Hola, {user.displayName}</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded transition-colors"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -94,7 +136,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center py-12">
-            <div className="text-xl text-gray-600">Cargando...</div>
+            <div className="text-xl text-gray-600">Cargando gastos...</div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

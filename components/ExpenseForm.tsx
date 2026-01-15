@@ -6,7 +6,7 @@ import { Plus, X } from 'lucide-react';
 
 interface ExpenseFormProps {
   date: Date;
-  onSubmit: (category: ExpenseCategory, amount: number, description?: string) => void;
+  onSubmit: (category: ExpenseCategory, amount: number, title?: string, description?: string) => void;
   onClose: () => void;
 }
 
@@ -19,14 +19,16 @@ const categories: { value: ExpenseCategory; label: string; color: string }[] = [
 export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
   const [category, setCategory] = useState<ExpenseCategory>('food');
   const [amount, setAmount] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = parseFloat(amount);
     if (amountNum > 0) {
-      onSubmit(category, amountNum, description || undefined);
+      onSubmit(category, amountNum, title || undefined, description || undefined);
       setAmount('');
+      setTitle('');
       setDescription('');
     }
   };
@@ -35,7 +37,7 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Agregar Gasto</h2>
+          <h2 className="text-xl font-bold text-gray-800">Agregar Gasto</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -43,7 +45,7 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
             <X size={24} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -59,6 +61,19 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Título
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ej: Almuerzo con amigos, Viaje al trabajo..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Categoría
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -67,11 +82,10 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
                   key={cat.value}
                   type="button"
                   onClick={() => setCategory(cat.value)}
-                  className={`px-3 py-2 rounded-md font-medium transition-colors ${
-                    category === cat.value
-                      ? `${cat.color} text-white`
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-3 py-2 rounded-md font-medium transition-colors ${category === cat.value
+                    ? `${cat.color} text-white`
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   {cat.label}
                 </button>
