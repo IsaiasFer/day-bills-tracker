@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "day-bills-tracker"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

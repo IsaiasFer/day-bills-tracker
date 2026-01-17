@@ -6,6 +6,12 @@ import {
   endOfYear,
   format,
 } from 'date-fns';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function calculateExpenseSummary(
   expenses: Expense[],
@@ -19,6 +25,7 @@ export function calculateExpenseSummary(
       transport: 0,
       other: 0,
     },
+    bySubCategory: {},
     period: {
       start: startDate,
       end: endDate,
@@ -28,6 +35,10 @@ export function calculateExpenseSummary(
   expenses.forEach((expense) => {
     summary.total += expense.amount;
     summary.byCategory[expense.category] += expense.amount;
+
+    if (expense.subCategory) {
+      summary.bySubCategory[expense.subCategory] = (summary.bySubCategory[expense.subCategory] || 0) + expense.amount;
+    }
   });
 
   return summary;

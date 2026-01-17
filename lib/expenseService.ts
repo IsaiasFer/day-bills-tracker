@@ -11,23 +11,25 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Expense, ExpenseCategory } from '@/types/expense';
-
-const EXPENSES_COLLECTION = 'expenses';
+import { SubCategory, Expense, ExpenseCategory } from '@/types/expense';
+import { EXPENSES_COLLECTION } from './constants';
 
 export const expenseService = {
+
   async addExpense(
     date: Date,
     category: ExpenseCategory,
     amount: number,
     userId: string,
     title?: string,
-    description?: string
+    description?: string,
+    subCategory?: SubCategory
   ): Promise<string> {
     const now = new Date();
     const docRef = await addDoc(collection(db, EXPENSES_COLLECTION), {
       date: Timestamp.fromDate(date),
       category,
+      subCategory: subCategory || null,
       amount,
       userId,
       title: title || '',
@@ -79,6 +81,7 @@ export const expenseService = {
         title: data.title,
         date: data.date.toDate(),
         category: data.category as ExpenseCategory,
+        subCategory: data.subCategory as SubCategory | undefined,
         amount: data.amount,
         description: data.description,
         createdAt: data.createdAt.toDate(),

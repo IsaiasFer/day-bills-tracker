@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Expense, ExpenseCategory } from '@/types/expense';
+import { Expense, ExpenseCategory, SubCategory } from '@/types/expense';
 import { expenseService } from '@/lib/expenseService';
 import { calculateExpenseSummary, getMonthDateRange } from '@/lib/utils';
 import { CalendarView } from '@/components/CalendarView';
@@ -12,6 +12,7 @@ import { Plus, Wallet } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function Home() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -54,27 +55,37 @@ export default function Home() {
     category: ExpenseCategory,
     amount: number,
     title?: string,
-    description?: string
+    description?: string,
+    subCategory?: SubCategory
   ) => {
-    if (!user) return;
+    if (!user) {
+      toast.error('No hay usuario logueado');
+      return;
+    }
+
     try {
-      await expenseService.addExpense(selectedDate, category, amount, user.uid, title, description);
+      await expenseService.addExpense(selectedDate, category, amount, user.uid, title, description, subCategory);
       await loadExpenses();
       setShowExpenseForm(false);
+      toast.success('Gasto agregado correctamente');
     } catch (error) {
       console.error('Error adding expense:', error);
-      alert('Error al agregar el gasto. Por favor, intenta de nuevo.');
+      toast.error('Error al agregar el gasto');
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
+    // For a better UX, we could use a custom dialog, but native confirm is acceptable for now.
+    // Alternatively, we could delete immediately and offer an "Undo" toast.
+    // Using native confirm for simplicity as per plan, but replacing alerts with toast.
     if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
       try {
         await expenseService.deleteExpense(id);
         await loadExpenses();
+        toast.success('Gasto eliminado');
       } catch (error) {
         console.error('Error deleting expense:', error);
-        alert('Error al eliminar el gasto. Por favor, intenta de nuevo.');
+        toast.error('Error al eliminar el gasto');
       }
     }
   };
@@ -113,18 +124,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-blue-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+      <header className="bg-blue-600 text-white shadow-lg sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
             <div className="flex items-center gap-3">
-              <Wallet size={32} />
-              <h1 className="text-3xl font-bold">Control de Gastos Diarios</h1>
+              <div className="bg-white/10 p-2 rounded-lg">
+                <Wallet className="w-6 h-6 md:w-8 md:h-8" />
+              </div>
+              <h1 className="text-xl md:text-3xl font-bold tracking-tight">Control de Gastos</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm opacity-90">Hola, {user.displayName}</span>
+            <div className="flex items-center justify-between md:justify-end gap-4">
+              <span className="text-sm opacity-90 font-medium">Hola, {user.displayName?.split(' ')[0]}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded transition-colors"
+                className="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all duration-200 backdrop-blur-sm font-medium border border-white/10"
               >
                 Cerrar Sesión
               </button>
@@ -133,14 +146,15 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 md:px-4 py-6 md:py-8 pb-24 md:pb-8">
         {loading ? (
-          <div className="text-center py-12">
-            <div className="text-xl text-gray-600">Cargando gastos...</div>
+          <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+            <div className="w-12 h-12 bg-gray-200 rounded-full mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               <CalendarView
                 expenses={expenses}
                 selectedDate={selectedDate}
@@ -149,24 +163,25 @@ export default function Home() {
                 currentMonth={currentMonth}
               />
 
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">
-                    Gastos del {selectedDate.toLocaleDateString('es-AR')}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <h2 className="text-lg md:text-xl font-bold text-gray-800">
+                    <span className="block text-sm font-normal text-gray-500 mb-1">Gastos del día</span>
+                    {selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </h2>
                   <button
                     onClick={() => setShowExpenseForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all shadow-sm hover:shadow-md"
                   >
                     <Plus size={20} />
-                    Agregar Gasto
+                    <span className="font-medium">Agregar Gasto</span>
                   </button>
                 </div>
                 <ExpenseList expenses={dayExpenses} onDelete={handleDeleteExpense} />
               </div>
             </div>
 
-            <div>
+            <div className="order-first lg:order-last">
               <SummaryPanel summary={summary} />
             </div>
           </div>

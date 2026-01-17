@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Aplicación para el seguimiento de gastos diarios por categoría",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,6 +19,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           {children}
+          <Toaster richColors position="top-center" />
         </AuthProvider>
       </body>
     </html>

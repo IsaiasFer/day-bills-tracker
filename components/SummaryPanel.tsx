@@ -2,6 +2,7 @@
 
 import { ExpenseSummary } from '@/types/expense';
 import { formatCurrency, formatDateDisplay } from '@/lib/utils';
+import { CATEGORY_SUB_CATEGORIES, SUB_CATEGORY_CONFIG } from '@/lib/constants';
 import { UtensilsCrossed, Bus, Package, TrendingUp } from 'lucide-react';
 
 interface SummaryPanelProps {
@@ -62,6 +63,10 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
           const percentage = getPercentage(amount);
           const Icon = category.icon;
 
+          // Get sub-categories for this category if any
+          const subCats = CATEGORY_SUB_CATEGORIES[category.key];
+          const hasSubCats = subCats && subCats.some(sc => (summary.bySubCategory[sc] || 0) > 0);
+
           return (
             <div key={category.key} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
@@ -83,9 +88,34 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
                 </div>
               </div>
 
-              <div className="text-lg font-semibold text-gray-800">
+              <div className="text-lg font-semibold text-gray-800 mb-1">
                 {formatCurrency(amount)}
               </div>
+
+              {/* Sub-categories breakdown */}
+              {hasSubCats && subCats && (
+                <div className="mt-3 pl-2 space-y-1 border-l-2 border-gray-100">
+                  {subCats.map(subCat => {
+                    const subAmount = summary.bySubCategory[subCat] || 0;
+                    if (subAmount === 0) return null;
+                    const subConfig = SUB_CATEGORY_CONFIG[subCat];
+                    const subPercent = ((subAmount / amount) * 100).toFixed(0);
+
+                    return (
+                      <div key={subCat} className="flex justify-between items-center text-xs pl-2">
+                        <div className="flex items-center gap-1.5 text-gray-600">
+                          <div className={`w-1.5 h-1.5 rounded-full ${subConfig.bgColor.replace('100', '500').replace('200', '500')}`}></div>
+                          <span>{subConfig.label}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="text-gray-400">{subPercent}%</span>
+                          <span className="font-medium text-gray-700">{formatCurrency(subAmount)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}

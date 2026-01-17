@@ -1,10 +1,15 @@
 export type ExpenseCategory = 'food' | 'transport' | 'other';
+export type TransportSubCategory = 'saeta' | 'didi' | 'uber';
+export type FoodSubCategory = 'pedidos_ya' | 'rappi' | 'homemade' | 'bought';
+
+export type SubCategory = TransportSubCategory | FoodSubCategory;
 
 export interface Expense {
   id: string;
   title?: string;
   date: Date;
   category: ExpenseCategory;
+  subCategory?: SubCategory;
   amount: number;
   description?: string;
   createdAt: Date;
@@ -29,6 +34,7 @@ export interface ExpenseSummary {
     transport: number;
     other: number;
   };
+  bySubCategory: Record<string, number>;
   period: {
     start: Date;
     end: Date;
