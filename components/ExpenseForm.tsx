@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ExpenseCategory, SubCategory } from '@/types/expense';
-import { Plus, X } from 'lucide-react';
+import { ExpenseCategory, SubCategory, Expense } from '@/types/expense';
+import { Plus, X, Save } from 'lucide-react';
 import { CATEGORY_CONFIG, CATEGORY_SUB_CATEGORIES, SUB_CATEGORY_CONFIG } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -8,14 +8,15 @@ interface ExpenseFormProps {
   date: Date;
   onSubmit: (category: ExpenseCategory, amount: number, title?: string, description?: string, subCategory?: SubCategory) => void;
   onClose: () => void;
+  editingExpense?: Expense;
 }
 
-export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
-  const [category, setCategory] = useState<ExpenseCategory>('food');
-  const [subCategory, setSubCategory] = useState<SubCategory | undefined>();
-  const [amount, setAmount] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+export function ExpenseForm({ date, onSubmit, onClose, editingExpense }: ExpenseFormProps) {
+  const [category, setCategory] = useState<ExpenseCategory>(editingExpense?.category || 'food');
+  const [subCategory, setSubCategory] = useState<SubCategory | undefined>(editingExpense?.subCategory);
+  const [amount, setAmount] = useState(editingExpense?.amount.toString() || '');
+  const [title, setTitle] = useState(editingExpense?.title || '');
+  const [description, setDescription] = useState(editingExpense?.description || '');
 
   // Reset sub-category when category changes
   useEffect(() => {
@@ -26,8 +27,8 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
     e.preventDefault();
     const amountNum = parseFloat(amount);
 
-    if (isNaN(amountNum) || amountNum <= 0) {
-      alert('Por favor, ingresa un monto válido mayor a 0');
+    if (isNaN(amountNum) || amountNum < 0) {
+      alert('Por favor, ingresa un monto válido mayor o igual a 0');
       return;
     }
 
@@ -43,7 +44,7 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
       <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in slide-in-from-bottom duration-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Agregar Gasto</h2>
+          <h2 className="text-xl font-bold text-gray-800">{editingExpense ? 'Editar Gasto' : 'Agregar Gasto'}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -175,8 +176,17 @@ export function ExpenseForm({ date, onSubmit, onClose }: ExpenseFormProps) {
               type="submit"
               className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 font-medium shadow-sm"
             >
-              <Plus size={20} />
-              Agregar
+              {editingExpense ? (
+                <>
+                  <Save size={20} />
+                  Guardar
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  Agregar
+                </>
+              )}
             </button>
           </div>
         </form>

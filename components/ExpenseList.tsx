@@ -2,17 +2,18 @@
 
 import { Expense } from '@/types/expense';
 import { formatCurrency } from '@/lib/utils';
-import { Trash2, UtensilsCrossed, Bus, Package } from 'lucide-react';
+import { Trash2, Package, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ExpenseListProps {
   expenses: Expense[];
   onDelete: (id: string) => void;
+  onEdit: (expense: Expense) => void;
 }
 
 import { CATEGORY_CONFIG, SUB_CATEGORY_CONFIG } from '@/lib/constants';
 
-export function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
+export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
@@ -28,9 +29,6 @@ export function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
   return (
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
-
-        // ...
-
         {expenses.map((expense) => {
           const categoryConfig = CATEGORY_CONFIG[expense.category];
           const subCategoryConfig = expense.subCategory ? SUB_CATEGORY_CONFIG[expense.subCategory] : null;
@@ -81,13 +79,22 @@ export function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => onDelete(expense.id)}
-                className="p-2 text-red-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 rounded-lg transition-all"
-                title="Eliminar gasto"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => onEdit(expense)}
+                  className="p-2 text-blue-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 hover:bg-blue-50 rounded-lg transition-all"
+                  title="Editar gasto"
+                >
+                  <Pencil size={18} />
+                </button>
+                <button
+                  onClick={() => onDelete(expense.id)}
+                  className="p-2 text-red-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 rounded-lg transition-all"
+                  title="Eliminar gasto"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </motion.div>
           );
         })}
