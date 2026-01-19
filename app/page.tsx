@@ -20,6 +20,7 @@ export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | undefined>();
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -64,13 +65,28 @@ export default function Home() {
     }
 
     try {
-      await expenseService.addExpense(selectedDate, category, amount, user.uid, title, description, subCategory);
+      if (editingExpense) {
+        // Update existing expense
+        await expenseService.updateExpense(editingExpense.id, {
+          category,
+          amount,
+          title: title || '',
+          description: description || '',
+          subCategory,
+          date: selectedDate,
+        });
+        toast.success('Gasto actualizado correctamente');
+      } else {
+        // Add new expense
+        await expenseService.addExpense(selectedDate, category, amount, user.uid, title, description, subCategory);
+        toast.success('Gasto agregado correctamente');
+      }
       await loadExpenses();
       setShowExpenseForm(false);
-      toast.success('Gasto agregado correctamente');
+      setEditingExpense(undefined);
     } catch (error) {
-      console.error('Error adding expense:', error);
-      toast.error('Error al agregar el gasto');
+      console.error('Error saving expense:', error);
+      toast.error(editingExpense ? 'Error al actualizar el gasto' : 'Error al agregar el gasto');
     }
   };
 
@@ -88,6 +104,12 @@ export default function Home() {
         toast.error('Error al eliminar el gasto');
       }
     }
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setSelectedDate(new Date(expense.date));
+    setShowExpenseForm(true);
   };
 
   const handleMonthChange = (date: Date) => {
@@ -177,7 +199,7 @@ export default function Home() {
                     <span className="font-medium">Agregar Gasto</span>
                   </button>
                 </div>
-                <ExpenseList expenses={dayExpenses} onDelete={handleDeleteExpense} />
+                <ExpenseList expenses={dayExpenses} onDelete={handleDeleteExpense} onEdit={handleEditExpense} />
               </div>
             </div>
 
@@ -192,7 +214,11 @@ export default function Home() {
         <ExpenseForm
           date={selectedDate}
           onSubmit={handleAddExpense}
-          onClose={() => setShowExpenseForm(false)}
+          onClose={() => {
+            setShowExpenseForm(false);
+            setEditingExpense(undefined);
+          }}
+          editingExpense={editingExpense}
         />
       )}
     </div>
